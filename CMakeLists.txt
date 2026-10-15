@@ -7,4 +7,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(connect4
     src/main.cpp
     src/Board.cpp
+    src/Board.h
 )

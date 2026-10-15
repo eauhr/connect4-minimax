@@ -18,6 +18,12 @@ int main() {
             continue;
         }
 
+        if (b.checkWin(player)) {
+            b.print();
+            cout << "Wins " << player << "!\n";
+            break;
+        }
+
         player = (player == 'X') ? 'O' : 'X';
     }
 }

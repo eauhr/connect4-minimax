@@ -8,6 +8,7 @@ public:
     Board();              
     bool isValidMove(int col) const;
     bool dropPiece(int col, char piece);
+    bool checkWin(char piece) const;
     void print() const;
 
 private:
