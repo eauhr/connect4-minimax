@@ -5,20 +5,20 @@ using namespace std;
 Board::Board() {
     for (int r = 0; r < rows; ++r) {
         for (int c = 0; c < cols; ++c) {
-            cells[r][c] = ' ';
+            cells[r][c] = EMPTY;
         }
     }
 }
 
 bool Board::isValidMove(int col) const {
     if (col < 0 || col >= cols) return false;
-    return cells[0][col] == ' ';
+    return cells[0][col] == EMPTY;
 }
 
 bool Board::dropPiece(int col, char piece) {
     if (!isValidMove(col)) return false;
     for (int r = rows - 1; r >= 0; --r) {
-        if (cells[r][col] == ' ') {
+        if (cells[r][col] == EMPTY) {
             cells[r][col] = piece;
             return true;
         }
@@ -64,6 +64,22 @@ bool Board::checkWin(char piece) const {
         }
     }
     return false;
+}
+
+bool Board::isFull() const {
+    for (int c = 0; c < cols; c++)
+        if (cells[0][c] == EMPTY)
+            return false;
+    return true;
+}
+
+void Board::undoMove(int col) {
+    for (int r = 0; r < rows; r++) {
+        if (cells[r][col] != EMPTY) {  
+            cells[r][col] = EMPTY;
+            return;
+        }
+    }
 }
 
 void Board::print() const {

@@ -8,4 +8,8 @@ add_executable(connect4
     src/main.cpp
     src/Board.cpp
     src/Board.h
+    src/AI.h
+    src/AI.cpp
+    src/Game.h
+    src/Game.cpp
 )
