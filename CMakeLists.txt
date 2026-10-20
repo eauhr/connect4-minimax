@@ -12,4 +12,6 @@ add_executable(connect4
     src/AI.cpp
     src/Game.h
     src/Game.cpp
+    src/Experiments.h
+    src/Experiments.cpp
 )

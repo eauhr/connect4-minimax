@@ -1,36 +1,44 @@
 #include "AI.h"
 #include <cstdlib>
 
-AI::AI(char piece) : piece(piece) {}
+AI::AI(char piece, bool smart) : piece(piece), smart(smart) {}
+
+int AI::findWinningMove(Board& board, char player) const {
+    for (int c = 0; c < Board::cols; c++) {
+        if (!board.isValidMove(c)) continue;
+
+        board.dropPiece(c, player);
+        bool win = board.checkWin(player);
+        board.undoMove(c);           
+        if (win) return c;
+    }
+    return -1;
+}
+
+int AI::randomMove(const Board& board) const {
+    int valid[Board::cols];
+    int count = 0;
+    for (int c = 0; c < Board::cols; c++)
+        if (board.isValidMove(c))
+            valid[count++] = c;
+
+    return valid[rand() % count];
+}
 
 int AI::chooseMove(const Board& board) const {
+    if (!smart)
+        return randomMove(board);
+
     char opponent = (piece == 'X') ? 'O' : 'X';
 
     // for simulating moves a non-const Board
     Board tempBoard = board;
 
-    for (int c = 0; c < Board::cols; c++) {
-        if (!tempBoard.isValidMove(c)) continue;
-        tempBoard.dropPiece(c, piece);
-        bool win = tempBoard.checkWin(piece);
-        tempBoard.undoMove(c);
-        if (win) return c;
-    }
+    int move = findWinningMove(tempBoard, piece);
+    if (move != -1) return move;
 
-    // block the opponent's win
-    for (int c = 0; c < Board::cols; c++) {
-        if (!tempBoard.isValidMove(c)) continue;
-        tempBoard.dropPiece(c, opponent);
-        bool opponentWins = tempBoard.checkWin(opponent);
-        tempBoard.undoMove(c);
-        if (opponentWins) return c;
-    }
+    move = findWinningMove(tempBoard, opponent);
+    if (move != -1) return move;
 
-    int valid[Board::cols];
-    int count = 0;
-    for (int c = 0; c < Board::cols; c++)
-        if (tempBoard.isValidMove(c))
-            valid[count++] = c;
-
-    return valid[rand() % count];
+    return randomMove(tempBoard);
 }

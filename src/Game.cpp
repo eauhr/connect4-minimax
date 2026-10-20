@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Board.h"
 #include "AI.h"
+#include "Experiments.h"
 #include <iostream>
 
 void Game::run() {
@@ -8,6 +9,7 @@ void Game::run() {
         std::cout << "\n=== Connect 4 ===\n"
             << "1. Human vs Human\n"
             << "2. Human vs Computer\n"
+            << "3. Experiment: random vs win / block AI\n"
             << "0. Exit\n"
             << "Choice: ";
         int choice;
@@ -20,10 +22,16 @@ void Game::run() {
             continue;
         }
 
-        if (choice == 1)      play(false);
-        else if (choice == 2) play(true);
-        else if (choice == 0) return;
-        else                  std::cout << "Invalid choice.\n";
+        if (choice == 1)      
+            play(false);
+        else if (choice == 2) 
+            play(true);
+        else if (choice == 0) 
+            return;
+        else if (choice == 3) 
+            runRandomVsSmart(100);
+        else                  
+            std::cout << "Invalid choice.\n";
     }
 }
 
