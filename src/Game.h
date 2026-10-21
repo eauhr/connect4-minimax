@@ -5,6 +5,6 @@ public:
     void run();                    
 
 private:
-    void play(bool vsComputer);    
+    void play(bool vsComputer, int depth = 0);
     int readColumn(char player); 
 };

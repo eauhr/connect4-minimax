@@ -10,6 +10,9 @@ void Game::run() {
             << "1. Human vs Human\n"
             << "2. Human vs Computer\n"
             << "3. Experiment: random vs win / block AI\n"
+            << "4. Human vs Minimax(depth 4)\n"
+			<< "5. Experiment: minimax(depth 4) vs win / block AI\n"
+			<< "6. Experiment: Minimax vs Alpha-beta by depth\n"
             << "0. Exit\n"
             << "Choice: ";
         int choice;
@@ -30,6 +33,12 @@ void Game::run() {
             return;
         else if (choice == 3) 
             runRandomVsSmart(100);
+        else if (choice == 4) 
+            play(true, 4);
+        else if (choice == 5) 
+            runMinimaxVsSmart(50, 4);
+        else if (choice == 6)
+            runDepthComparison(7);
         else                  
             std::cout << "Invalid choice.\n";
     }
@@ -48,9 +57,9 @@ int Game::readColumn(char player) {
     return col - 1;
 }
 
-void Game::play(bool vsComputer) {
+void Game::play(bool vsComputer, int depth) {
     Board b;
-    AI ai('O');
+    AI ai('O', true, depth);
     char player = 'X';
 
     while (true) {

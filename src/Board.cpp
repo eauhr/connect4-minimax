@@ -95,4 +95,6 @@ void Board::print() const {
     std::cout << "\n";
 }
 
+char Board::at(int r, int c) const { return cells[r][c]; }
+
 
