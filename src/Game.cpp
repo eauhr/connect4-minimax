@@ -13,6 +13,7 @@ void Game::run() {
             << "4. Human vs Minimax(depth 4)\n"
 			<< "5. Experiment: minimax(depth 4) vs win / block AI\n"
 			<< "6. Experiment: Minimax vs Alpha-beta by depth\n"
+			<< "7. Experiment: depth vs depth\n"
             << "0. Exit\n"
             << "Choice: ";
         int choice;
@@ -39,6 +40,9 @@ void Game::run() {
             runMinimaxVsSmart(50, 4);
         else if (choice == 6)
             runDepthComparison(7);
+        else if (choice == 7) {
+            runDepthTournament(200, 4);
+        }
         else                  
             std::cout << "Invalid choice.\n";
     }

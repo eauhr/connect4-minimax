@@ -4,6 +4,7 @@
 #include <iostream>
 #include <chrono>
 #include <fstream>
+#include <cstdlib>
 
 static char playMatch(const AI& first, const AI& second) {
     Board b;
@@ -21,6 +22,84 @@ static char playMatch(const AI& first, const AI& second) {
 
         player = (player == 'X') ? 'O' : 'X';
     }
+}
+
+static char playMatchWithOpening(const AI& first, const AI& second, int randomPlies) {
+    Board b;
+    char player = 'X';
+    int ply = 0;
+
+    while (true) {
+        int col;
+        if (ply < randomPlies) {
+            do {
+                col = rand() % Board::cols;
+            } while (!b.isValidMove(col));
+        }
+        else {
+            const AI& current = (player == 'X') ? first : second;
+            col = current.chooseMove(b);
+        }
+
+        b.dropPiece(col, player);
+
+        if (b.checkWin(player))
+            return player;
+        if (b.isFull())       
+            return 'D';
+
+        player = (player == 'X') ? 'O' : 'X';
+        ply++;
+    }
+}
+
+struct PairStats {
+    int winsA = 0, winsB = 0, draws = 0, xWins = 0;
+};
+
+static PairStats playPair(int games, int depthA, int depthB, int randomPlies) {
+    PairStats s;
+
+    for (int g = 0; g < games; g++) {
+        bool aFirst = (g % 2 == 0);
+        AI a(aFirst ? 'X' : 'O', true, depthA, true);
+        AI b(aFirst ? 'O' : 'X', true, depthB, true);
+
+        char winner = aFirst ? playMatchWithOpening(a, b, randomPlies)
+            : playMatchWithOpening(b, a, randomPlies);
+
+        if (winner == 'D')                  s.draws++;
+        else if ((winner == 'X') == aFirst) s.winsA++;
+        else                                s.winsB++;
+
+        if (winner == 'X') s.xWins++;
+    }
+    return s;
+}
+
+void runDepthTournament(int games, int randomPlies) {
+    const int pairs[][2] = { {1, 3}, {2, 4}, {3, 5}, {4, 4} };
+
+    std::ofstream csv("depth_tournament.csv");
+    csv << "depthA,depthB,games,winsA,winsB,draws,xWins\n";
+
+    std::cout << "\n" << games << " games per pair, "
+        << randomPlies << " random opening moves\n"
+        << "A vs B   winsA  winsB  draws  X-wins\n";
+
+    for (const auto& p : pairs) {
+        PairStats s = playPair(games, p[0], p[1], randomPlies);
+
+        std::cout << p[0] << " vs " << p[1] << "     "
+            << s.winsA << "      " << s.winsB << "      "
+            << s.draws << "      " << s.xWins << "\n";
+
+        csv << p[0] << "," << p[1] << "," << games << ","
+            << s.winsA << "," << s.winsB << "," << s.draws << ","
+            << s.xWins << "\n";
+    }
+    std::cout << "\nSaved to depth_tournament.csv\n";
+
 }
 
 void runRandomVsSmart(int games) {
