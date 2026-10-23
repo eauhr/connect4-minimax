@@ -9,8 +9,8 @@ void Game::run() {
         std::cout << "\n=== Connect 4 ===\n"
             << "1. Human vs Human\n"
             << "2. Human vs Computer\n"
-            << "3. Experiment: random vs win / block AI\n"
-            << "4. Human vs Minimax(depth 4)\n"
+            << "3. Human vs Minimax(depth 4)\n"
+            << "4. Experiment: random vs win / block AI\n"
 			<< "5. Experiment: minimax(depth 4) vs win / block AI\n"
 			<< "6. Experiment: Minimax vs Alpha-beta by depth\n"
 			<< "7. Experiment: depth vs depth\n"
@@ -30,19 +30,21 @@ void Game::run() {
             play(false);
         else if (choice == 2) 
             play(true);
-        else if (choice == 0) 
-            return;
         else if (choice == 3) 
-            runRandomVsSmart(100);
+            play(true, 3);
         else if (choice == 4) 
-            play(true, 4);
+            runRandomVsSmart(100);
         else if (choice == 5) 
             runMinimaxVsSmart(50, 4);
         else if (choice == 6)
             runDepthComparison(7);
-        else if (choice == 7) {
+        else if (choice == 7)
+        {
             runDepthTournament(200, 4);
         }
+        else if (choice == 0) 
+            return;
+        
         else                  
             std::cout << "Invalid choice.\n";
     }
