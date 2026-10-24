@@ -1,7 +1,22 @@
 #include "AI.h"
+#include "Random.h"
 #include <cstdlib>
 #include <climits>
 #include <algorithm>
+
+namespace {
+    constexpr int WIN_SCORE = 100000;
+
+    constexpr int CENTER_BONUS = 3;   // own piece in the centre column
+    constexpr int THREE_BONUS = 5;   // window: 3 own + 1 empty
+    constexpr int TWO_BONUS = 2;   // window: 2 own + 2 empty
+    constexpr int OPP_THREE_PENALTY = 4;   // window: 3 opponent + 1 empty
+
+    constexpr int kOrder[Board::cols] = { 3, 2, 4, 1, 5, 0, 6 };
+
+    char opponentOf(char p) { return (p == 'X') ? 'O' : 'X'; }
+}
+
 
 AI::AI(char piece, bool smart, int depth, bool alphaBeta)
     : piece(piece), smart(smart), maxDepth(depth), useAlphaBeta(alphaBeta) {}
@@ -28,7 +43,7 @@ int AI::randomMove(const Board& board) const {
         if (board.isValidMove(c))
             valid[count++] = c;
 
-    return valid[rand() % count];
+    return valid[randInt(count)];
 }
 
 
@@ -37,7 +52,8 @@ int AI::evaluate(const Board& board) const {
     int score = 0;
 
     for (int r = 0; r < Board::rows; r++)
-        if (board.at(r, 3) == piece) score += 3;
+        if(board.at(r, Board::cols / 2) == piece)
+        score += CENTER_BONUS;
 
     const int dr[] = { 0, 1, 1, -1 };
     const int dc[] = { 1, 0, 1, 1 };
@@ -52,27 +68,33 @@ int AI::evaluate(const Board& board) const {
                 int mine = 0, theirs = 0, empty = 0;
                 for (int k = 0; k < 4; k++) {
                     char ch = board.at(r + k * dr[d], c + k * dc[d]);
-                    if (ch == piece)      mine++;
-                    else if (ch == opp)   theirs++;
-                    else                  empty++;
+                    if (ch == piece)     
+                        mine++;
+                    else if (ch == opp)   
+                        theirs++;
+                    else                  
+                        empty++;
                 }
 
-                if (mine == 3 && empty == 1)        score += 5;
-                else if (mine == 2 && empty == 2)   score += 2;
-                if (theirs == 3 && empty == 1)      score -= 4;
+                if (mine == 3 && empty == 1)        
+                    score += THREE_BONUS;
+                else if (mine == 2 && empty == 2)  
+                    score += TWO_BONUS;
+                if (theirs == 3 && empty == 1)     
+                    score -= OPP_THREE_PENALTY;
             }
     return score;
 }
 
 int AI::minimax(Board& board, int remaining, int alpha, int beta, bool maximizing) const {
     nodes++;
-    char opp = (piece == 'X') ? 'O' : 'X';
+    char opp = opponentOf(piece);
 
     //search for a win/loss/draw
     if (board.checkWin(piece))
-        return 100000 + remaining;
+        return WIN_SCORE + remaining;
     if (board.checkWin(opp))
-        return -100000 - remaining;
+        return -WIN_SCORE - remaining;
     if (board.isFull())
         return 0;
     if (remaining == 0)
@@ -93,7 +115,8 @@ int AI::minimax(Board& board, int remaining, int alpha, int beta, bool maximizin
             best = std::max(best, val);
             if (useAlphaBeta) {
                 alpha = std::max(alpha, best);
-                if (alpha >= beta) break;
+                if (alpha >= beta) 
+                    break;
             }
         }
         return best;
@@ -101,7 +124,8 @@ int AI::minimax(Board& board, int remaining, int alpha, int beta, bool maximizin
     else {
         int best = INT_MAX;
         for (int c : order) {
-            if (!board.isValidMove(c)) continue;
+            if (!board.isValidMove(c)) 
+                continue;
             board.dropPiece(c, opp);
             int val = minimax(board, remaining - 1, alpha, beta, true);
             board.undoMove(c);
@@ -117,49 +141,48 @@ int AI::minimax(Board& board, int remaining, int alpha, int beta, bool maximizin
     }
 }
 
-int AI::chooseMove(const Board& board) const {
-    if (maxDepth > 0) {
-        nodes = 0;
-        Board work = board;
-        const int order[] = { 3, 2, 4, 1, 5, 0, 6 };
-        int alpha = INT_MIN, beta = INT_MAX;
-        int bestScore = INT_MIN, bestCol = -1;
+int AI::searchMove(const Board& board) const {
+    nodes = 0;
+    Board work = board;
+    int alpha = INT_MIN, beta = INT_MAX;
+    int bestScore = INT_MIN, bestCol = -1;
 
-        for (int c : order) {
-            if (!work.isValidMove(c))
-                continue;
-            work.dropPiece(c, piece);
-            int score = minimax(work, maxDepth - 1, alpha, beta, false);
-            work.undoMove(c);
+    for (int c : kOrder) {
+        if (!work.isValidMove(c))
+            continue;
+        work.dropPiece(c, piece);
+        int score = minimax(work, maxDepth - 1, alpha, beta, false);
+        work.undoMove(c);
 
-            if (score > bestScore)
-            {
-                bestScore = score;
-                bestCol = c;
-            }
-            if (useAlphaBeta)
-                alpha = std::max(alpha, bestScore);
+        if (score > bestScore) {
+            bestScore = score;
+            bestCol = c;
         }
-        return bestCol;
+        if (useAlphaBeta)
+            alpha = std::max(alpha, bestScore);
     }
-        if (!smart)
-            return randomMove(board);
+    lastScore = bestScore;
+    return bestCol;
+}
 
-        char opponent = (piece == 'X') ? 'O' : 'X';
+int AI::chooseMove(const Board& board) const {
+    if (maxDepth > 0)   return searchMove(board);
 
-        // for simulating moves a non-const Board
-        Board work = board;
+    if (!smart)
+        return randomMove(board);
 
-        int move = findWinningMove(work, piece);
-        if (move != -1) return move;
+    const char opponent = opponentOf(piece);
+    Board work = board;
 
-        move = findWinningMove(work, opponent);
-        if (move != -1) 
-            return move;
+    int move = findWinningMove(work, piece);
+    if (move != -1)
+        return move;
 
-        return 
-            randomMove(work);
-    }
+    move = findWinningMove(work, opponent);
+    if (move != -1)
+        return move;
 
+    return randomMove(work);
+}
 
    

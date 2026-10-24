@@ -11,12 +11,14 @@ Board::Board() {
 }
 
 bool Board::isValidMove(int col) const {
-    if (col < 0 || col >= cols) return false;
+    if (col < 0 || col >= cols) 
+        return false;
     return cells[0][col] == EMPTY;
 }
 
 bool Board::dropPiece(int col, char piece) {
-    if (!isValidMove(col)) return false;
+    if (!isValidMove(col)) 
+        return false;
     for (int r = rows - 1; r >= 0; --r) {
         if (cells[r][col] == EMPTY) {
             cells[r][col] = piece;
@@ -74,6 +76,8 @@ bool Board::isFull() const {
 }
 
 void Board::undoMove(int col) {
+    if (col < 0 || col >= cols) 
+        return;
     for (int r = 0; r < rows; r++) {
         if (cells[r][col] != EMPTY) {  
             cells[r][col] = EMPTY;

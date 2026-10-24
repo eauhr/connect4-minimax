@@ -2,5 +2,6 @@
 
 void runRandomVsSmart(int games);
 void runMinimaxVsSmart(int games, int depth);
-void runDepthComparison(int maxDepth); 
+void runDepthComparison(int maxDepth, int repeats);
 void runDepthTournament(int games, int randomPlies);
+void runEquivalenceTest(int positions, int maxDepth);

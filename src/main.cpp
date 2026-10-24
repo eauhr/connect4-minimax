@@ -8,7 +8,6 @@
 using namespace std;
 
 int main() {
-    srand(static_cast<unsigned>(time(nullptr)));
     Game game;
     game.run();
 
